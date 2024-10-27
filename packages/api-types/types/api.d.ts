@@ -482,8 +482,6 @@ export interface paths {
   '/platform/organizations/{slug}/tax-ids': {
     /** Gets the given organization's tax ID */
     get: operations['TaxIdsController_getTaxId']
-    /** Gets the given organization's tax ID */
-    get: operations['TaxIdsController_getTaxId']
     /** Creates or updates a tax ID for the given organization */
     put: operations['TaxIdsController_updateTaxId']
     /** Delete the tax ID with the given ID */
@@ -9591,8 +9589,6 @@ export interface operations {
   }
   /** Gets the given organization's tax ID */
   TaxIdsController_getTaxId: {
-  /** Gets the given organization's tax ID */
-  TaxIdsController_getTaxId: {
     parameters: {
       path: {
         /** @description Organization slug */
@@ -9608,7 +9604,6 @@ export interface operations {
       403: {
         content: never
       }
-      /** @description Failed to retrieve the organization's tax ID */
       /** @description Failed to retrieve the organization's tax ID */
       500: {
         content: never
@@ -9632,7 +9627,6 @@ export interface operations {
       200: {
         content: {
           'application/json': components['schemas']['TaxIdResponse']
-          'application/json': components['schemas']['TaxIdResponse']
         }
       }
       403: {
@@ -9653,7 +9647,6 @@ export interface operations {
       }
     }
     responses: {
-      204: {
       204: {
         content: never
       }
