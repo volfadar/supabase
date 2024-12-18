@@ -1528,10 +1528,6 @@ export const realtime: NavMenuConstant = {
           name: 'Postgres Changes',
           url: '/guides/realtime/postgres-changes',
         },
-        {
-          name: 'Broadcast Changes',
-          url: '/guides/realtime/broadcast-changes',
-        },
       ],
     },
     {
