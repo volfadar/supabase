@@ -641,11 +641,9 @@ You can also send a Broadcast message by making an HTTP request to Realtime serv
 
 ## Trigger broadcast messages from your database
 <Admonition type="caution">
-This feature is currently in Private Alpha. To use Broadcast Changes request them via Support Ticket.
-</Admonition>
 
-<Admonition type="caution">
-This feature is currently in Private Alpha. It's subject to changes both on implementation and usability
+This feature is currently in Private Alpha. The API and implementation may change. To request access, submit a Support Ticket.
+
 </Admonition>
 
 ### How it works
@@ -654,7 +652,7 @@ Broadcast Changes allows you to trigger messages from your database. To achieve 
 
 We are using partitioned tables per day which allows us to delete your previous images in a performant way by dropping the physical tables of this partitioned table. Currently we are dropping tables older than 3 days old.
 
-The broadcast itself uses the same approach as our [Broadcast](https://supabase.com/docs/guides/realtime/broadcast?queryGroups=language&language=js) feature which utilizes WebSockets to send JSON packages. We've also set [Realtime Authorization](https://supabase.com/docs/guides/realtime/authorization?queryGroups=language&language=dart)  as a requirement from the start to ensure connected users comply to your Authorization rules and avoid information leakage.
+Broadcasting from the database works like a client-side broadcast, using WebSockets to send JSON packages.  [Realtime Authorization]/docs/guides/realtime/authorization) is required and enabled by default to protect your data.
 
 To help you with this we provide you two functions:
 
@@ -674,13 +672,11 @@ SELECT realtime.send (
 );
 ```
 
-This allows you to trigger other types of messages that could be useful for other user cases.
-
 ### Broadcast record changes
 
 #### Setup realtime authorization
 
-As mentioned above we've opted to have Realtime Authorization as a requirement so you will need to setup policies for your topics so your users can listen to messages from topics:
+Realtime Authorization is required and enabled by default. To allow your users to listen to messages from topics, create a RLS policy:
 
 ```sql
 CREATE POLICY "authenticated can receive broadcasts"
@@ -691,13 +687,13 @@ USING ( true );
 
 ```
 
-Read more about [Realtime Authorization](https://supabase.com/docs/guides/realtime/authorization?queryGroups=language&language=dart) so you ensure you have the best approach for your goal
+See the [Realtime Authorization](/docs/guides/realtime/authorization) docs to learn how to set up more specific policies.
 
-#### Setup trigger function
+#### Set up trigger function
 
-Then we need to setup the function that will be used by your trigger and this will allow you to setup every element of the message easily.
+First, set up a trigger function that uses `realtime.broadcast_changes` to insert an event whenever it is triggered. The event is set up to include data on the schema, table, operation, and field changes that triggered it.
 
-For our example use case we want to have simply a topic with the name `topic:<record id>` to which we're going to broadcast our event.
+For our example use case, we want to have a topic with the name `topic:<record id>` to which we're going to broadcast our event.
 
 ```sql
 CREATE OR REPLACE FUNCTION public.your_table_changes() RETURNS trigger AS $$
@@ -725,9 +721,10 @@ Of note are the Postgres native trigger special variables used:
 - `OLD` - the record before the change
 
 You can read more about them in this [guide](https://www.postgresql.org/docs/current/plpgsql-trigger.html#PLPGSQL-DML-TRIGGER).
-#### Setup trigger
 
-With the function ready, we can setup the trigger that will happen on each operation.
+#### Set up trigger
+
+Next, set up a trigger so the function runs whenever your target table has a change.
 
 ```sql
 CREATE TRIGGER broadcast_changes_for_your_table_trigger
@@ -743,7 +740,7 @@ As you can see, we will be broadcasting all operations so our users will receive
 Finally we need to listen for the changes in the client side:
 
 ```jsx
-const id = '4a8bbe89-f601-4414-bd47-8d0f7ab2a31a'
+const gameId = '4a8bbe89-f601-4414-bd47-8d0f7ab2a31a'
 await supabase.realtime.setAuth() // Needed for Realtime Authorization
 const changes = supabase
   .channel(`topic:${gameId}`)
