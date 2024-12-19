@@ -4,7 +4,7 @@ subtitle: 'Send and receive messages using Realtime Broadcast'
 description: 'Send and receive messages using Realtime Broadcast'
 ---
 
-Let's explore how to implement Realtime Broadcast to send messages between clients using Supabase Realtime using either WebSockets, REST API or triggers from your database.
+Let's explore how to implement Realtime Broadcast to send messages between clients using either WebSockets, REST API or triggers from your database.
 
 ## Usage
 
@@ -648,9 +648,9 @@ This feature is currently in Private Alpha. The API and implementation may chang
 
 ### How it works
 
-Broadcast Changes allows you to trigger messages from your database. To achieve it Realtime is directly reading your WAL (Write Append Log) file using a publication against the `realtime.messages` table so whenever a new insert happens they are broadcasted to connected users.
+Broadcast Changes allows you to trigger messages from your database. To achieve it Realtime is directly reading your WAL (Write Append Log) file using a publication against the `realtime.messages` table so whenever a new insert happens a message is sent to connected users.
 
-We are using partitioned tables per day which allows us to delete your previous images in a performant way by dropping the physical tables of this partitioned table. Tables older than 3 days old are deleted.
+It uses partitioned tables per day which allows the deletion your previous images in a performant way by dropping the physical tables of this partitioned table. Tables older than 3 days old are deleted.
 
 Broadcasting from the database works like a client-side broadcast, using WebSockets to send JSON packages. [Realtime Authorization]/docs/guides/realtime/authorization) is required and enabled by default to protect your data.
 
@@ -693,7 +693,7 @@ See the [Realtime Authorization](/docs/guides/realtime/authorization) docs to le
 
 First, set up a trigger function that uses `realtime.broadcast_changes` to insert an event whenever it is triggered. The event is set up to include data on the schema, table, operation, and field changes that triggered it.
 
-For our example use case, we want to have a topic with the name `topic:<record id>` to which we're going to broadcast our event.
+For this example use case, we want to have a topic with the name `topic:<record id>` to which we're going to broadcast events.
 
 ```sql
 CREATE OR REPLACE FUNCTION public.your_table_changes() RETURNS trigger AS $$
@@ -733,14 +733,14 @@ FOR EACH ROW
 EXECUTE FUNCTION your_table_changes ();
 ```
 
-As you can see, we will be broadcasting all operations so our users will receive events when records are inserted, updated or deleted from `public.your_table` .
+As you can see, it will be broadcasting all operations so our users will receive events when records are inserted, updated or deleted from `public.your_table` .
 
 #### Listen on client side
 
-Finally we need to listen for the changes in the client side:
+Finally, client side will requires to be set up to listen to the topic `topic:<record id>` to receive the events.
 
 ```jsx
-const gameId = '4a8bbe89-f601-4414-bd47-8d0f7ab2a31a'
+const gameId = 'id'
 await supabase.realtime.setAuth() // Needed for Realtime Authorization
 const changes = supabase
   .channel(`topic:${gameId}`)
