@@ -638,8 +638,8 @@ You can also send a Broadcast message by making an HTTP request to Realtime serv
   </TabPanel>
 </Tabs>
 
-
 ## Trigger broadcast messages from your database
+
 <Admonition type="caution">
 
 This feature is currently in Private Alpha. The API and implementation may change. To request access, submit a Support Ticket.
@@ -652,9 +652,10 @@ Broadcast Changes allows you to trigger messages from your database. To achieve 
 
 We are using partitioned tables per day which allows us to delete your previous images in a performant way by dropping the physical tables of this partitioned table. Tables older than 3 days old are deleted.
 
-Broadcasting from the database works like a client-side broadcast, using WebSockets to send JSON packages.  [Realtime Authorization]/docs/guides/realtime/authorization) is required and enabled by default to protect your data.
+Broadcasting from the database works like a client-side broadcast, using WebSockets to send JSON packages. [Realtime Authorization]/docs/guides/realtime/authorization) is required and enabled by default to protect your data.
 
 The database broadcast feature provides two functions to help you send messages:
+
 - `realtime.send` will insert a message into realtime.messages without a specific format.
 - `realtime.broadcast_changes` will insert a message with the required fields to emit database changes to clients. This helps you set up triggers on your tables to emit changes.
 
@@ -743,20 +744,8 @@ const gameId = '4a8bbe89-f601-4414-bd47-8d0f7ab2a31a'
 await supabase.realtime.setAuth() // Needed for Realtime Authorization
 const changes = supabase
   .channel(`topic:${gameId}`)
-  .on(
-    'broadcast',
-    { event: 'INSERT' },
-    (payload) => console.log(payload)
-  )
-   .on(
-    'broadcast',
-    { event: 'UPDATE' },
-    (payload) => console.log(payload)
-  )
-   .on(
-    'broadcast',
-    { event: 'DELETE' },
-    (payload) => console.log(payload)
-  )
+  .on('broadcast', { event: 'INSERT' }, (payload) => console.log(payload))
+  .on('broadcast', { event: 'UPDATE' }, (payload) => console.log(payload))
+  .on('broadcast', { event: 'DELETE' }, (payload) => console.log(payload))
   .subscribe()
 ```
