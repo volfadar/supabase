@@ -4,7 +4,7 @@ subtitle: 'Send and receive messages using Realtime Broadcast'
 description: 'Send and receive messages using Realtime Broadcast'
 ---
 
-Let's explore how to implement Realtime Broadcast to send messages between clients.
+Let's explore how to implement Realtime Broadcast to send messages between clients using Supabase Realtime using either WebSockets, REST API or triggers from your database.
 
 ## Usage
 
@@ -88,7 +88,7 @@ Go to your Supabase project's [API Settings](https://supabase.com/dashboard/proj
 
 ### Listening to broadcast messages
 
-You can provide a callback for the `broadcast` channel to receive message. In this example we will receive any `broadcast` messages in `room-1`:
+You can provide a callback for the `broadcast` channel to receive message. This example will receive any `broadcast` messages in `room-1`:
 
 <Tabs
   scrollable
@@ -648,20 +648,19 @@ This feature is currently in Private Alpha. The API and implementation may chang
 
 ### How it works
 
-Broadcast Changes allows you to trigger messages from your database. To achieve it we're directly reading your WAL file using a publication against the `realtime.messages` table so whenever a new insert happens we are able to broadcast it to your users.
+Broadcast Changes allows you to trigger messages from your database. To achieve it Realtime is directly reading your WAL (Write Append Log) file using a publication against the `realtime.messages` table so whenever a new insert happens they are broadcasted to connected users.
 
-We are using partitioned tables per day which allows us to delete your previous images in a performant way by dropping the physical tables of this partitioned table. Currently we are dropping tables older than 3 days old.
+We are using partitioned tables per day which allows us to delete your previous images in a performant way by dropping the physical tables of this partitioned table. Tables older than 3 days old are deleted.
 
 Broadcasting from the database works like a client-side broadcast, using WebSockets to send JSON packages.  [Realtime Authorization]/docs/guides/realtime/authorization) is required and enabled by default to protect your data.
 
-To help you with this we provide you two functions:
-
-- `realtime.send` that will do the insert into `realtime.messages`
-- `realtime.broadcast_changes` that will use `realtime.send` but help you setup the fields required to emit changes to your clients easily.
+The database broadcast feature provides two functions to help you send messages:
+- `realtime.send` will insert a message into realtime.messages without a specific format.
+- `realtime.broadcast_changes` will insert a message with the required fields to emit database changes to clients. This helps you set up triggers on your tables to emit changes.
 
 ### Broadcasting a message from your database
 
-We wanted to provide you as much flexibility as possible so we have `realtime.send` that will enable you to broadcast messages from your database without a specific format:
+The `realtime.send` function provides the most flexibility by allowing you to broadcast messages from your database without a specific format. This allows you to use database broadcast for messages that aren't necessarily tied to the shape of a Postgres row change.
 
 ```sql
 SELECT realtime.send (
@@ -676,7 +675,7 @@ SELECT realtime.send (
 
 #### Setup realtime authorization
 
-Realtime Authorization is required and enabled by default. To allow your users to listen to messages from topics, create a RLS policy:
+Realtime Authorization is required and enabled by default. To allow your users to listen to messages from topics, create a RLS (Row Level Security) policy:
 
 ```sql
 CREATE POLICY "authenticated can receive broadcasts"
